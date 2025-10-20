@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AiMine Portal v2 — Creative AI Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #0F172A;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    header {
+      text-align: center;
+      padding: 120px 20px 100px;
+      background: radial-gradient(circle at top center, #132241, #0F172A 80%);
+    }
+    h1 { font-size: 2.8rem; font-weight: 700; }
+    h2 { font-size: 1.8rem; margin-bottom: 20px; }
+    p { color: #d0d7e0; margin-top: 10px; line-height: 1.6; }
+    .btn {
+      background-color: #5B8DEF;
+      color: #fff;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(91,141,239,0.6); }
+    section { padding: 80px 20px; text-align: center; }
+    .generator-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      margin: 0 auto 40px;
+      max-width: 700px;
+      text-align: left;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      margin-top: 10px;
+      font-size: 1rem;
+    }
+    #img-result img {
+      margin-top: 15px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(91,141,239,0.4);
+    }
+    footer {
+      background-color: #060f22;
+      text-align: center;
+      padding: 30px 20px;
+      color: #9aa3b8;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>All Creative AI Power in One Portal</h1>
+    <p>AiMine helps you turn text into videos, images, and voices — no coding, no limits.</p>
+    <br>
+    <a href="#generators" class="btn">Start Now</a>
+  </header>
+
+  <section id="about">
+    <h2>AI Portal for Local Creators & Entrepreneurs</h2>
+    <p>AiMine connects multiple AI generators worldwide — from text-to-video, image-to-video, to text-to-speech — in one place.<br>
+      We empower creators, small businesses, and individuals to produce professional content without expensive tools.</p>
+  </section>
+
+  <section id="generators">
+    <h2>Explore AI Tools (Integrated Demo)</h2>
+
+    <div class="generator-box">
+      <h3>🎨 Text → Image</h3>
+      <p>Type a description to generate an image:</p>
+      <input id="img-prompt" type="text" placeholder="e.g. sunset over rice terraces, cinematic lighting">
+      <button id="gen-img" class="btn" style="margin-top:10px;">Generate Image</button>
+      <div id="img-result"></div>
+    </div>
+
+    <div class="generator-box">
+      <h3>🔈 Text → Speech</h3>
+      <p>Enter text to generate an AI voice:</p>
+      <textarea id="tts-text" rows="3" placeholder="Type something to convert to voice..."></textarea>
+      <button id="gen-tts" class="btn" style="margin-top:10px;">Generate & Play</button>
+      <div id="tts-result"></div>
+    </div>
+
+    <p style="text-align:center;margin-top:20px;">All AI generations run directly inside AiMine Portal using free models.</p>
+  </section>
+
+  <section id="contact">
+    <h2>Want Your Own AI Website?</h2>
+    <p>Contact the AiMine team to create your own AI-powered website.</p>
+    <br>
+    <a href="https://wa.me/6282261820498" target="_blank" class="btn">Contact Us</a>
+  </section>
+
+  <footer>
+    © 2025 AiMine Portal — Built with AI for Limitless Creativity.
+  </footer>
+
+  <script>
+    async function generateImage() {
+      const prompt = document.getElementById('img-prompt').value;
+      if (!prompt) return alert('Please enter a prompt first.');
+      const btn = document.getElementById('gen-img');
+      btn.disabled = true; btn.innerText = 'Generating...';
+
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      const resultDiv = document.getElementById('img-result');
+      resultDiv.innerHTML = '';
+
+      if (data.output && Array.isArray(data.output) && data.output[0]) {
+        const img = document.createElement('img');
+        img.src = data.output[0];
+        resultDiv.appendChild(img);
+      } else {
+        resultDiv.innerHTML = '<p style="color:#f77;">Failed to generate image. Check API key or model status.</p>';
+      }
+
+      btn.disabled = false; btn.innerText = 'Generate Image';
+    }
+
+    async function generateTTS() {
+      const text = document.getElementById('tts-text').value;
+      if (!text) return alert('Please enter text first.');
+      const btn = document.getElementById('gen-tts');
+      btn.disabled = true; btn.innerText = 'Generating...';
+
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const data = await res.json();
+      const resultDiv = document.getElementById('tts-result');
+      resultDiv.innerHTML = '';
+
+      if (data.audio_base64) {
+        const audio = new Audio('data:audio/wav;base64,' + data.audio_base64);
+        audio.controls = true;
+        audio.play();
+        resultDiv.appendChild(audio);
+      } else {
+        resultDiv.innerHTML = '<p style="color:#f77;">Failed to generate speech. Check API token or model limit.</p>';
+      }
+
+      btn.disabled = false; btn.innerText = 'Generate & Play';
+    }
+
+    document.getElementById('gen-img').addEventListener('click', generateImage);
+    document.getElementById('gen-tts').addEventListener('click', generateTTS);
+  </script>
+</body>
+</html>
